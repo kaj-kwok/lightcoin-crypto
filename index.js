@@ -1,29 +1,70 @@
-let balance = 500.00;
+// let balance = 500.00;
 
-class Withdrawal {
+class Transaction {
 
-  constructor(amount) {
+  constructor(amount, account) {
     this.amount = amount;
+    this.account = account;
   }
-
   commit() {
-    balance -= this.amount;
+    if (this.isAllowed === true) {
+      this.time = new Date();
+      this.account.addTransaction(this);
+    } else {
+      return console.log("insufficient funds");
+    }
   }
 
 }
 
+class Withdrawal extends Transaction {
 
+  get value() {
+    return -(this.amount);
+  }
+  get isAllowed() {
+    if (this.amount < this.account.balance) {
+      return true;
+    }
+    return false;
+  }
+
+}
+
+class Deposit extends Transaction {
+
+  get value() {
+    return this.amount;
+  }
+  get isAllowed() {
+    return true;
+  }
+}
+
+class Account {
+
+  constructor(username) {
+    this.username = username;
+    this.transactions = [];
+  }
+  get balance() {
+    return this.transactions.reduce((a, b) => a + b.value, 0);
+  }
+  addTransaction(transaction) {
+    this.transactions.push(transaction);
+  }
+}
 
 
 // DRIVER CODE BELOW
 // We use the code below to "drive" the application logic above and make sure it's working as expected
 
-t1 = new Withdrawal(50.25);
+const myAccount = new Account("snow-patrol");
+
+console.log('Starting Balance:', myAccount.balance);
+
+const t1 = new Withdrawal(50.25, myAccount);
 t1.commit();
-console.log('Transaction 1:', t1);
-
-t2 = new Withdrawal(9.99);
-t2.commit();
-console.log('Transaction 2:', t2);
-
-console.log('Balance:', balance);
+const t3 = new Deposit(120.00, myAccount);
+t3.commit();
+console.log("transactions:", myAccount.balance);
